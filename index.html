@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamp Switch</title>
 
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+}
+
+/* Сцена фиксированная — КЛЮЧ */
+#scene {
+    position: fixed;
+    inset: 0;
+    background: black;
+}
+
+/* Видео — всегда на весь экран */
+#video {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+    background: black;
+}
+
+/* Чёрный фон */
+#black {
+    position: fixed;
+    inset: 0;
+    background: url("blackfone.png") center / cover no-repeat;
+    z-index: 1;
+}
+
+/* Лампа */
+#lamp {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 280px;
+    background: url("lampoff.png") left top / contain no-repeat;
+    z-index: 2;
+    cursor: pointer;
+}
+
+#lamp.on {
+    filter: drop-shadow(0 0 35px rgba(255,200,120,0.9));
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene">
+    <video id="video" src="kuro.mp4" muted loop playsinline></video>
+    <div id="black"></div>
+    <div id="lamp"></div>
+</div>
+
+<script>
+const lamp  = document.getElementById("lamp");
+const black = document.getElementById("black");
+const video = document.getElementById("video");
+
+let isOn = false;
+let videoStarted = false;
+
+lamp.addEventListener("click", () => {
+    isOn = !isOn;
+
+    if (isOn) {
+        if (!videoStarted) {
+            video.play().catch(()=>{});
+            videoStarted = true;
+        }
+
+        lamp.classList.add("on");
+        lamp.style.backgroundImage = "url('lampon.png')";
+        black.style.display = "none";   // ← ВАЖНО
+        video.style.opacity = "1";
+    } else {
+        lamp.classList.remove("on");
+        lamp.style.backgroundImage = "url('lampoff.png')";
+        black.style.display = "block";
+        video.style.opacity = "0";
+    }
+});
+</script>
+
+</body>
+</html>
