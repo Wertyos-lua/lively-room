@@ -1,106 +1,133 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no" />
-  <title>Lively Room</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      width: 100%;
-      height: 100%;
-      touch-action: manipulation;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, user-scalable=no">
+<title>Lamp Switch</title>
 
-    .scene {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      perspective: 800px;
-      overflow: hidden;
-    }
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+}
 
-    .layer {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 120%;
-      height: 120%;
-      background-size: cover;
-      background-position: center;
-      transform-style: preserve-3d;
-      will-change: transform;
-      transition: transform 0.08s linear;
-    }
+#scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
-    #left {
-      background-image: url("assets/left.jpg");
-      transform: translate(-50%, -50%) translateZ(-80px);
-    }
+/* Видео фон */
+#video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+}
 
-    #center {
-      background-image: url("assets/center.jpg");
-      transform: translate(-50%, -50%) translateZ(0px);
-    }
+/* Чёрный фон */
+#black {
+    position: absolute;
+    inset: 0;
+    background: url("blackfone.png") center/cover no-repeat;
+    opacity: 1;
+    transition: opacity 0.6s ease;
+    z-index: 1;
+}
 
-    #right {
-      background-image: url("assets/right.jpg");
-      transform: translate(-50%, -50%) translateZ(80px);
-    }
+/* Лампа */
+#lamp {
+    position: absolute;
+    inset: 0;
+    background: url("lampoff.png") center/contain no-repeat;
+    z-index: 2;
+    cursor: pointer;
+    transition: filter 0.6s ease;
+}
 
-    .bulb {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(255,255,200,0.2), rgba(255,255,200,0.05));
-      transform: translate(-50%, -50%);
-      box-shadow: 0 0 40px rgba(255,255,200,0.2);
-      transition: all 0.2s ease;
-    }
-
-    .bulb.on {
-      background: radial-gradient(circle, rgba(255,255,220,1), rgba(255,200,100,0.6));
-      box-shadow: 0 0 120px rgba(255,230,150,0.9);
-    }
-  </style>
+/* Свечение включённой лампы */
+.on {
+    filter: drop-shadow(0 0 40px rgba(255,200,120,0.8));
+}
+</style>
 </head>
+
 <body>
-  <div class="scene">
-    <div id="left" class="layer"></div>
-    <div id="center" class="layer"></div>
-    <div id="right" class="layer"></div>
-    <div id="bulb" class="bulb"></div>
-  </div>
+<div id="scene">
+    <video id="video" src="kuro.mp4" muted loop playsinline></video>
+    <div id="black"></div>
+    <div id="lamp"></div>
+</div>
 
-  <script>
-    const layers = [
-      { el: document.getElementById("left"), depth: -30 },
-      { el: document.getElementById("center"), depth: 0 },
-      { el: document.getElementById("right"), depth: 30 }
-    ];
+<script>
+const lamp = document.getElementById("lamp");
+const black = document.getElementById("black");
+const video = document.getElementById("video");
 
+let isOn = false;
+
+/* Видео всегда играет, но скрыто */
+video.play().catch(()=>{});
+
+/* Toggle */
+lamp.addEventListener("click", () => {
+    isOn = !isOn;
+
+    if (isOn) {
+        lamp.style.backgroundImage = "url('lampon.png')";
+        lamp.classList.add("on");
+        black.style.opacity = "0";
+        video.style.opacity = "1";
+    } else {
+        lamp.style.backgroundImage = "url('lampoff.png')";
+        lamp.classList.remove("on");
+        black.style.opacity = "1";
+        video.style.opacity = "0";
+    }
+});
+
+/* Parallax */
+let targetX = 0, targetY = 0;
+let currentX = 0, currentY = 0;
+
+function updateParallax() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    lamp.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    requestAnimationFrame(updateParallax);
+}
+updateParallax();
+
+/* Mouse / touch */
+window.addEventListener("mousemove", e => {
+    targetX = (e.clientX / window.innerWidth - 0.5) * 30;
+    targetY = (e.clientY / window.innerHeight - 0.5) * 30;
+});
+
+window.addEventListener("touchmove", e => {
+    const t = e.touches[0];
+    targetX = (t.clientX / window.innerWidth - 0.5) * 30;
+    targetY = (t.clientY / window.innerHeight - 0.5) * 30;
+});
+
+/* Gyroscope */
+if (window.DeviceOrientationEvent) {
     window.addEventListener("deviceorientation", e => {
-      const x = e.gamma || 0;
-      const y = e.beta || 0;
-
-      layers.forEach(l => {
-        l.el.style.transform =
-          `translate(-50%, -50%) translateX(${x * l.depth * 0.02}px) translateY(${y * l.depth * 0.02}px) translateZ(${l.depth}px)`;
-      });
+        if (e.gamma !== null && e.beta !== null) {
+            targetX = e.gamma * 0.8;
+            targetY = e.beta * 0.4;
+        }
     });
-
-    const bulb = document.getElementById("bulb");
-    let on = false;
-    bulb.addEventListener("click", () => {
-      on = !on;
-      bulb.classList.toggle("on", on);
-    });
-  </script>
+}
+</script>
 </body>
 </html>
