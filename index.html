@@ -15,6 +15,7 @@ html, body {
     background: black;
 }
 
+/* Сцена */
 #scene {
     position: relative;
     width: 100%;
@@ -44,18 +45,25 @@ html, body {
     z-index: 1;
 }
 
-/* Лампа */
+/* Лампа — левый верхний угол */
 #lamp {
     position: absolute;
-    inset: 0;
-    background: url("lampoff.png") center/contain no-repeat;
+    top: 0;
+    left: 0;
+
+    width: 300px;
+    height: 300px;
+
+    background: url("lampoff.png") left top / contain no-repeat;
     z-index: 2;
     cursor: pointer;
+
+    transform-origin: top left;
     transition: filter 0.6s ease;
 }
 
-/* Свечение включённой лампы */
-.on {
+/* Свечение */
+#lamp.on {
     filter: drop-shadow(0 0 40px rgba(255,200,120,0.8));
 }
 </style>
@@ -74,15 +82,18 @@ const black = document.getElementById("black");
 const video = document.getElementById("video");
 
 let isOn = false;
+let videoStarted = false;
 
-/* Видео всегда играет, но скрыто */
-video.play().catch(()=>{});
-
-/* Toggle */
+/* Клик по лампе */
 lamp.addEventListener("click", () => {
     isOn = !isOn;
 
     if (isOn) {
+        if (!videoStarted) {
+            video.play().catch(()=>{});
+            videoStarted = true;
+        }
+
         lamp.style.backgroundImage = "url('lampon.png')";
         lamp.classList.add("on");
         black.style.opacity = "0";
@@ -107,24 +118,25 @@ function updateParallax() {
 }
 updateParallax();
 
-/* Mouse / touch */
+/* Mouse */
 window.addEventListener("mousemove", e => {
-    targetX = (e.clientX / window.innerWidth - 0.5) * 30;
-    targetY = (e.clientY / window.innerHeight - 0.5) * 30;
+    targetX = (e.clientX / window.innerWidth - 0.5) * 12;
+    targetY = (e.clientY / window.innerHeight - 0.5) * 12;
 });
 
+/* Touch */
 window.addEventListener("touchmove", e => {
     const t = e.touches[0];
-    targetX = (t.clientX / window.innerWidth - 0.5) * 30;
-    targetY = (t.clientY / window.innerHeight - 0.5) * 30;
+    targetX = (t.clientX / window.innerWidth - 0.5) * 12;
+    targetY = (t.clientY / window.innerHeight - 0.5) * 12;
 });
 
 /* Gyroscope */
 if (window.DeviceOrientationEvent) {
     window.addEventListener("deviceorientation", e => {
         if (e.gamma !== null && e.beta !== null) {
-            targetX = e.gamma * 0.8;
-            targetY = e.beta * 0.4;
+            targetX = e.gamma * 0.4;
+            targetY = e.beta * 0.2;
         }
     });
 }
