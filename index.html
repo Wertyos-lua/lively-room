@@ -1,1 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamp Switch</title>
 
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+}
+
+/* Сцена */
+#scene {
+    position: fixed;
+    inset: 0;
+    background: black;
+}
+
+/* Видео фон */
+#video {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+    background: black;
+}
+
+/* Чёрный фон */
+#black {
+    position: fixed;
+    inset: 0;
+    background: url("blackfone.png") center / cover no-repeat;
+    z-index: 1;
+}
+
+/* Контейнер лампы */
+#lamp-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 280px;
+    z-index: 2;
+}
+
+/* Визуальная лампа */
+#lamp-visual {
+    position: absolute;
+    inset: 0;
+    background: url("lampoff.png") left top / contain no-repeat;
+    pointer-events: none;
+}
+
+/* ЗОНА КЛИКА — ПРИВЯЗАНА К ЛАМПЕ */
+#lamp-hitbox {
+    position: absolute;
+
+    /* ↓↓↓ ЭТИ ЗНАЧЕНИЯ ВАЖНЫ ↓↓↓ */
+    left: 110px;   /* по горизонтали — центр колбы */
+    top: 150px;    /* по вертикали — сама лампочка */
+    width: 60px;
+    height: 60px;
+
+    cursor: pointer;
+}
+
+/* Свечение */
+.on {
+    filter: drop-shadow(0 0 35px rgba(255,200,120,0.9));
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene">
+    <video id="video" src="kuro.mp4" muted loop playsinline></video>
+    <div id="black"></div>
+
+    <div id="lamp-container">
+        <div id="lamp-visual"></div>
+        <div id="lamp-hitbox"></div>
+    </div>
+</div>
+
+<script>
+const lampVisual = document.getElementById("lamp-visual");
+const lampHitbox = document.getElementById("lamp-hitbox");
+const black = document.getElementById("black");
+const video = document.getElementById("video");
+
+let isOn = false;
+let videoStarted = false;
+
+lampHitbox.addEventListener("click", () => {
+    isOn = !isOn;
+
+    if (isOn) {
+        if (!videoStarted) {
+            video.play().catch(()=>{});
+            videoStarted = true;
+        }
+
+        lampVisual.classList.add("on");
+        lampVisual.style.backgroundImage = "url('lampon.png')";
+        black.style.display = "none";
+        video.style.opacity = "1";
+    } else {
+        lampVisual.classList.remove("on");
+        lampVisual.style.backgroundImage = "url('lampoff.png')";
+        black.style.display = "block";
+        video.style.opacity = "0";
+    }
+});
+</script>
+
+</body>
+</html>
