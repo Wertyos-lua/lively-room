@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lamp Switch DEBUG</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+    overflow: hidden;
+    font-family: monospace;
+}
+
+/* Сцена */
+#scene {
+    position: fixed;
+    inset: 0;
+    background: black;
+}
+
+/* Видео */
+#video {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    z-index: 0;
+}
+
+/* Чёрный фон */
+#black {
+    position: fixed;
+    inset: 0;
+    background: url("blackfone.png") center / cover no-repeat;
+    z-index: 1;
+}
+
+/* Контейнер лампы */
+#lamp-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 280px;
+    z-index: 2;
+}
+
+/* Лампа */
+#lamp-visual {
+    position: absolute;
+    inset: 0;
+    background: url("lampoff.png") left top / contain no-repeat;
+    pointer-events: none;
+}
+
+/* HITBOX — ВИДИМЫЙ */
+#lamp-hitbox {
+    position: absolute;
+
+    /* ⬇⬇⬇ МЕНЯЙ ТОЛЬКО ЭТИ ЗНАЧЕНИЯ ⬇⬇⬇ */
+    left: 110px;
+    top: 150px;
+    width: 60px;
+    height: 60px;
+    /* ⬆⬆⬆ МЕНЯЙ ТОЛЬКО ЭТИ ЗНАЧЕНИЯ ⬆⬆⬆ */
+
+    border: 2px dashed cyan;        /* ← ВИДИМАЯ ЗОНА */
+    background: rgba(0,255,255,0.15);
+    cursor: pointer;
+    z-index: 3;
+}
+
+/* Подсветка */
+.on {
+    filter: drop-shadow(0 0 35px rgba(255,200,120,0.9));
+}
+
+/* Текст координат */
+#debug {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    color: #00ffff;
+    font-size: 12px;
+    z-index: 99;
+    background: rgba(0,0,0,0.6);
+    padding: 6px 8px;
+    border-radius: 6px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene">
+    <video id="video" src="kuro.mp4" muted loop playsinline></video>
+    <div id="black"></div>
+
+    <div id="lamp-container">
+        <div id="lamp-visual"></div>
+        <div id="lamp-hitbox"></div>
+    </div>
+</div>
+
+<div id="debug">
+LEFT: 110px<br>
+TOP: 150px<br>
+WIDTH: 60px<br>
+HEIGHT: 60px
+</div>
+
+<script>
+const lampVisual = document.getElementById("lamp-visual");
+const lampHitbox = document.getElementById("lamp-hitbox");
+const black = document.getElementById("black");
+const video = document.getElementById("video");
+const debug = document.getElementById("debug");
+
+let isOn = false;
+let videoStarted = false;
+
+lampHitbox.addEventListener("click", () => {
+    isOn = !isOn;
+
+    if (isOn) {
+        if (!videoStarted) {
+            video.play().catch(()=>{});
+            videoStarted = true;
+        }
+        lampVisual.classList.add("on");
+        lampVisual.style.backgroundImage = "url('lampon.png')";
+        black.style.display = "none";
+        video.style.opacity = "1";
+    } else {
+        lampVisual.classList.remove("on");
+        lampVisual.style.backgroundImage = "url('lampoff.png')";
+        black.style.display = "block";
+        video.style.opacity = "0";
+    }
+});
+
+/* Обновление текста (на случай если правишь) */
+function updateDebug() {
+    const s = getComputedStyle(lampHitbox);
+    debug.innerHTML =
+        `LEFT: ${s.left}<br>` +
+        `TOP: ${s.top}<br>` +
+        `WIDTH: ${s.width}<br>` +
+        `HEIGHT: ${s.height}`;
+}
+setInterval(updateDebug, 500);
+</script>
+
+</body>
+</html>
